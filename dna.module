@@ -1,0 +1,86 @@
+<?php
+
+function dna_menu() {
+    $items['dna'] = array(
+        'title' => 'DNA Sequencer',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('dna_form'),
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+    );
+    $items['dna_success'] = array(
+        'title' => 'DNA Results',
+        'page callback' => 'dna_form_success',
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function dna_form() {
+    $form['sequence'] = array(
+        '#title' => 'Enter Half of a DNA Sequence:',
+        '#type' => 'textfield',
+        '#description' => t('DNA is a double helix DNA is a molecule which essentially carries the programming instructions to create all life on Earth. But, it\'s composed of surprisingly simple elements. There are 4 of these elements, called nucleotides. They start with the letters A T C G.
+                            This means that there are two sequences of nucleotides that run side by side.'),
+        '#element_validate' => array('element_validate_base'),
+        '#required' => TRUE,
+    );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Sequence',
+    );
+    return $form;
+}
+
+function element_validate_base($element) {
+    $input_sequence = strtoupper($element['#value']);
+    $letters = str_split($input_sequence);
+
+    //an array containing all letters that are not A T C G
+    $invalid_letters = [
+        'B', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    ];
+
+    //checks the two arrays
+    $error = array_intersect($letters, $invalid_letters);
+
+    //if there is an intersection (at least 1 invalid letter, show the error)
+    if (count($error) > 0) {
+        form_error($element, t('Re-enter your DNA string with valid nucleotides (A, T, C, G)'));
+    }
+}
+
+function dna_form_submit($form, &$form_state) {
+    $_SESSION['output'] = sequence($form_state['values']['sequence']);
+    $form_state['redirect'] = 'dna_success';
+}
+
+function sequence($input) {
+    //input case doesn't matter
+    $nucleotides = str_split(strtoupper($input));
+    $output = "";
+
+    //appends matching nucleotide in order to the empty string
+    foreach($nucleotides as $letter) {
+        if ($letter == 'A') {
+            $output .= 'T';
+        }
+        if ($letter == 'T') {
+            $output .= 'A';
+        }
+        if ($letter == 'C') {
+            $output .= 'G';
+        }
+        if ($letter == 'G') {
+            $output .= 'C';
+        }
+    }
+
+    return $output;
+}
+
+function dna_form_success() {
+    $output = $_SESSION['output'];
+    return "The matching nucleotides to your original DNA string are: " . $output;
+}
