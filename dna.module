@@ -33,6 +33,11 @@ function dna_form() {
     return $form;
 }
 
+
+/*this validation is very simple because the way the sequence function works, it doesn't really matter
+  what the user inputs, because nucleotides only get added to the string if they are valid regardless.
+  numbers, punctuation, etc, won't break it (or show errors) for this reason.
+*/
 function element_validate_base($element) {
     $input_sequence = strtoupper($element['#value']);
     $letters = str_split($input_sequence);
@@ -61,7 +66,10 @@ function sequence($input) {
     $nucleotides = str_split(strtoupper($input));
     $output = "";
 
-    //appends matching nucleotide in order to the empty string
+    /* appends matching nucleotide in order to the empty string
+    /  if the nucleotide isn't recognized by the if statements, it gets skipped over, essentially
+    /  rendering the previous validation useless, but I kept it in anyways to demonstrate use
+    */
     foreach($nucleotides as $letter) {
         if ($letter == 'A') {
             $output .= 'T';
